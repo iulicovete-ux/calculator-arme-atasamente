@@ -493,11 +493,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return interaction.update(buildCalculatorUI(interaction.user.id));
     }
     
-    if (interaction.isButton() && interaction.customId === "calc_group_consumabile") {
-      selectedGroup.set(interaction.user.id, "Consumabile");
-      pendingItem.delete(interaction.user.id);
-      return interaction.update(buildCalculatorUI(interaction.user.id));
-    }
+    if (interaction.isButton() && interaction.customId === "calc_group_gloante") {
+  selectedGroup.set(interaction.user.id, "Gloante");
+  pendingItem.delete(interaction.user.id);
+  return interaction.update(buildCalculatorUI(interaction.user.id));
+}
 
     if (interaction.isButton() && interaction.customId === "calc_clear") {
       carts.delete(interaction.user.id);
