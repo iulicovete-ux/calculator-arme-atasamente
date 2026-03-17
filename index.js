@@ -112,7 +112,7 @@ const RECIPES = {
   "Munitie Ceramic Pistol": { "Praf de Pusca": 1.3 },
   "Munitie Pistol MK2": { "Praf de Pusca": 1.3 },
   "Munitie Combat Pistol": { "Praf de Pusca": 1 },
-  "Munitie Pistol": {"Praf de Pusca": 1 },
+  "Munitie Pistol": { "Praf de Pusca": 1 },
 };
 
 const GROUPS = {
@@ -131,7 +131,7 @@ const GROUPS = {
     "Amortizor SMG",
     "Amortizor Assault Rifle",
     "Amortizor Carbine Rifle",
-    "Amortizor Advanced Rifle"
+    "Amortizor Advanced Rifle",
   ],
   "Incarcatoare": [
     "Incarcator Pistol",
@@ -148,7 +148,7 @@ const GROUPS = {
     "Incarcator Compact Rifle",
     "Baterie de Gloante Compact Rifle",
     "Baterie de Gloante Carabine Rifle",
-    "Incarcator Advanced Rifle"
+    "Incarcator Advanced Rifle",
   ],
   "Lanterne": [
     "Lanterna Pistol",
@@ -157,17 +157,16 @@ const GROUPS = {
     "Lanterna MICRO SMG",
     "Lanterna SMG",
     "Lanterna Assault Rifle",
-    "Lanterna Advanced Rifle"
+    "Lanterna Advanced Rifle",
   ],
   "Scope": [
     "Mounted Scope Pistol MK2",
     "Luneta MICRO SMG",
     "Luneta Tec Pistol",
     "Luneta SMG",
-    "Luneta Assault Rifle"
+    "Luneta Assault Rifle",
   ],
   "Grip": ["Grip Assault Rifle"],
-
   "Gloante": [
     "Munitie DB",
     "Munitie Gusenberg",
@@ -185,7 +184,7 @@ const GROUPS = {
     "Munitie Ceramic Pistol",
     "Munitie Pistol MK2",
     "Munitie Combat Pistol",
-    "Munitie Pistol"
+    "Munitie Pistol",
   ],
 };
 
@@ -219,7 +218,9 @@ function calculateTotals(cart) {
     }
   }
 
-  return Array.from(totals.entries()).sort((a, b) => a[0].localeCompare(b[0], "ro"));
+  return Array.from(totals.entries()).sort((a, b) =>
+    a[0].localeCompare(b[0], "ro")
+  );
 }
 
 function buildOpenPanel() {
@@ -400,6 +401,7 @@ function buildResultMessage(userId) {
     ],
   };
 }
+
 function buildConsumableQtyModal(itemName) {
   return new ModalBuilder()
     .setCustomId("calc_consumable_qty_modal")
@@ -415,6 +417,7 @@ function buildConsumableQtyModal(itemName) {
       )
     );
 }
+
 async function registerCommands() {
   const commands = [
     new SlashCommandBuilder()
@@ -425,10 +428,9 @@ async function registerCommands() {
 
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
-  await rest.put(
-    Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-    { body: commands }
-  );
+  await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
+    body: commands,
+  });
 
   console.log("✅ Slash commands registered.");
 }
@@ -440,7 +442,10 @@ client.once(Events.ClientReady, async () => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
-    if (interaction.isModalSubmit() && interaction.customId === "calc_consumable_qty_modal") {
+    if (
+      interaction.isModalSubmit() &&
+      interaction.customId === "calc_consumable_qty_modal"
+    ) {
       const itemName = pendingItem.get(interaction.user.id);
 
       if (!itemName || !RECIPES[itemName]) {
@@ -473,12 +478,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
       pendingItem.delete(interaction.user.id);
 
       return interaction.reply({
-        ...buildCalculatorUI(interaction.user.id, `Adăugat în coș: ${itemName} x${qty}`),
+        ...buildCalculatorUI(
+          interaction.user.id,
+          `Adăugat în coș: ${itemName} x${qty}`
+        ),
         flags: MessageFlags.Ephemeral,
       });
     }
-    
-    if (interaction.isChatInputCommand() && interaction.commandName === "setup-calculator") {
+
+    if (
+      interaction.isChatInputCommand() &&
+      interaction.commandName === "setup-calculator"
+    ) {
       await interaction.channel.send(buildOpenPanel());
 
       return interaction.reply({
@@ -547,12 +558,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       pendingItem.delete(interaction.user.id);
       return interaction.update(buildCalculatorUI(interaction.user.id));
     }
-    
+
     if (interaction.isButton() && interaction.customId === "calc_group_gloante") {
-  selectedGroup.set(interaction.user.id, "Gloante");
-  pendingItem.delete(interaction.user.id);
-  return interaction.update(buildCalculatorUI(interaction.user.id));
-}
+      selectedGroup.set(interaction.user.id, "Gloante");
+      pendingItem.delete(interaction.user.id);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
+    }
 
     if (interaction.isButton() && interaction.customId === "calc_clear") {
       carts.delete(interaction.user.id);
@@ -592,7 +603,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
     }
 
-    if (interaction.isStringSelectMenu() && interaction.customId === "calc_select_item") {
+    if (
+      interaction.isStringSelectMenu() &&
+      interaction.customId === "calc_select_item"
+    ) {
       const itemName = interaction.values[0];
 
       if (!RECIPES[itemName]) {
@@ -604,27 +618,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       pendingItem.set(interaction.user.id, itemName);
 
+      // If you later add a real "Consumabile" group, this modal can be used.
       const currentGroup = selectedGroup.get(interaction.user.id) || "Pistoale";
-
-      // For Consumabile -> open typed quantity modal
       if (currentGroup === "Consumabile") {
         return interaction.showModal(buildConsumableQtyModal(itemName));
       }
 
-      // For all other groups -> keep dropdown quantity
       return interaction.update(
         buildCalculatorUI(interaction.user.id, `Ai selectat ${itemName}.`)
       );
     }
 
-      pendingItem.set(interaction.user.id, itemName);
-
-      return interaction.update(
-        buildCalculatorUI(interaction.user.id, `Ai selectat ${itemName}.`)
-      );
-    }
-
-    if (interaction.isStringSelectMenu() && interaction.customId === "calc_select_qty") {
+    if (
+      interaction.isStringSelectMenu() &&
+      interaction.customId === "calc_select_qty"
+    ) {
       const itemName = pendingItem.get(interaction.user.id);
 
       if (!itemName || !RECIPES[itemName]) {
@@ -655,10 +663,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     try {
       if (interaction.isRepliable()) {
-        await interaction.reply({
-          content: "❌ A apărut o eroare.",
-          flags: MessageFlags.Ephemeral,
-        });
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp({
+            content: "❌ A apărut o eroare.",
+            flags: MessageFlags.Ephemeral,
+          });
+        } else {
+          await interaction.reply({
+            content: "❌ A apărut o eroare.",
+            flags: MessageFlags.Ephemeral,
+          });
+        }
       }
     } catch {}
   }
