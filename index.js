@@ -184,7 +184,7 @@ function calculateTotals(cart) {
 function buildOpenPanel() {
   return {
     content:
-      "**Calculator Crafting**\nApasă pe buton pentru a deschide calculatorul.\nSelecția și calculele tale vor fi private.",
+      "Ai nevoie de arme?\nDeschide calculatorul si vezi cate materiale iti trebuie.",
     components: [
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -249,7 +249,7 @@ function buildItemSelect(userId) {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId("calc_select_item")
-      .setPlaceholder("Alege un item...")
+      .setPlaceholder("Alege arma/atasamentul")
       .addOptions(
         items.map((itemName) => ({
           label: itemName.slice(0, 100),
@@ -303,14 +303,13 @@ function buildCalculatorUI(userId, notice = "") {
 
   const content =
     `${notice ? `**${notice}**\n\n` : ""}` +
-    `**Calculator privat**\n` +
     `**Grupa curentă:** ${currentGroup}\n\n` +
     `**Coșul tău:**\n${formatCart(userId)}\n\n` +
     helperText +
     `1. Alege grupa\n` +
-    `2. Alege itemul\n` +
+    `2. Alege arma/atasamentul\n` +
     `3. Alege cantitatea\n` +
-    `4. Repetă pentru alte iteme\n` +
+    `4. Repetă pentru alte arme/atasamente\n` +
     `5. **Calculează**`;
 
   const components = [
@@ -339,7 +338,6 @@ function buildResultMessage(userId) {
 
   return {
     content:
-      `**Rezultat calcul privat**\n\n` +
       `**Coșul tău:**\n${formatCart(userId)}\n\n` +
       `**Materiale totale necesare:**\n${totalsText}`,
     components: [
