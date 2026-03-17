@@ -14,7 +14,7 @@ const {
   MessageFlags,
 } = require("discord.js");
 
-console.log("✅ BOT VERSION: Crafting Calculator v3");
+console.log("✅ BOT VERSION: Crafting Calculator v3-fixed");
 
 // =========================
 // ENV
@@ -71,7 +71,7 @@ const client = new Client({
 // =========================
 const carts = new Map();        // userId -> [{ itemName, qty }]
 const pendingItem = new Map();  // userId -> selected item name
-const selectedGroup = new Map();// userId -> "1" | "2" | "3"
+const selectedGroup = new Map();// userId -> "Pistoale" | "SMG-uri" | "Arme mari"
 
 // =========================
 // HELPERS
@@ -117,19 +117,19 @@ function buildOpenPanel() {
 }
 
 function buildGroupButtons(userId) {
-  const currentGroup = selectedGroup.get(userId) || "1";
+  const currentGroup = selectedGroup.get(userId) || "Pistoale";
 
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId("calc_group_1")
+      .setCustomId("calc_group_pistoale")
       .setLabel("Pistoale")
       .setStyle(currentGroup === "Pistoale" ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId("calc_group_2")
+      .setCustomId("calc_group_smg")
       .setLabel("SMG-uri")
       .setStyle(currentGroup === "SMG-uri" ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId("calc_group_3")
+      .setCustomId("calc_group_arme_mari")
       .setLabel("Arme mari")
       .setStyle(currentGroup === "Arme mari" ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
@@ -142,12 +142,12 @@ function buildItemSelect(userId) {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId("calc_select_item")
-      .setPlaceholder("Alege o arma...")
+      .setPlaceholder("Alege o armă...")
       .addOptions(
         items.map((itemName) => ({
-          label: itemName,
+          label: itemName.slice(0, 100),
           value: itemName,
-          description: `Selectează ${itemName}`,
+          description: `Selectează ${itemName}`.slice(0, 100),
         }))
       )
   );
@@ -157,7 +157,7 @@ function buildQtySelect() {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId("calc_select_qty")
-      .setPlaceholder("Cate arme vrei?")
+      .setPlaceholder("Câte arme vrei?")
       .addOptions(
         Array.from({ length: 20 }, (_, i) => ({
           label: `${i + 1}`,
@@ -200,7 +200,7 @@ function buildCalculatorUI(userId, notice = "") {
     `**Grupa curentă:** ${currentGroup}\n\n` +
     `**Coșul tău:**\n${formatCart(userId)}\n\n` +
     helperText +
-    `1. Alege tipul de arma\n` +
+    `1. Alege tipul de armă\n` +
     `2. Alege arma\n` +
     `3. Alege cantitatea\n` +
     `4. Repetă pentru alte arme\n` +
@@ -305,13 +305,27 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
     }
 
-    if (interaction.isButton() && interaction.customId.startsWith("calc_group_")) {
-      const groupId = interaction.customId.replace("calc_group_", "");
-      selectedGroup.set(interaction.user.id, groupId);
+    if (interaction.isButton() && interaction.customId === "calc_group_pistoale") {
+      selectedGroup.set(interaction.user.id, "Pistoale");
       pendingItem.delete(interaction.user.id);
 
       const ui = buildCalculatorUI(interaction.user.id);
+      return interaction.update(ui);
+    }
 
+    if (interaction.isButton() && interaction.customId === "calc_group_smg") {
+      selectedGroup.set(interaction.user.id, "SMG-uri");
+      pendingItem.delete(interaction.user.id);
+
+      const ui = buildCalculatorUI(interaction.user.id);
+      return interaction.update(ui);
+    }
+
+    if (interaction.isButton() && interaction.customId === "calc_group_arme_mari") {
+      selectedGroup.set(interaction.user.id, "Arme mari");
+      pendingItem.delete(interaction.user.id);
+
+      const ui = buildCalculatorUI(interaction.user.id);
       return interaction.update(ui);
     }
 
