@@ -1,6 +1,9 @@
 require("dotenv").config();
 
 const {
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
   Client,
   GatewayIntentBits,
   REST,
@@ -397,7 +400,21 @@ function buildResultMessage(userId) {
     ],
   };
 }
-
+function buildConsumableQtyModal(itemName) {
+  return new ModalBuilder()
+    .setCustomId("calc_consumable_qty_modal")
+    .setTitle(`Cantitate pentru ${itemName}`)
+    .addComponents(
+      new ActionRowBuilder().addComponents(
+        new TextInputBuilder()
+          .setCustomId("qty_input")
+          .setLabel("Introdu cantitatea")
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder("Ex: 250")
+          .setRequired(true)
+      )
+    );
+}
 async function registerCommands() {
   const commands = [
     new SlashCommandBuilder()
@@ -423,6 +440,44 @@ client.once(Events.ClientReady, async () => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
+    if (interaction.isModalSubmit() && interaction.customId === "calc_consumable_qty_modal") {
+      const itemName = pendingItem.get(interaction.user.id);
+
+      if (!itemName || !RECIPES[itemName]) {
+        return interaction.reply({
+          content: "❌ Nu am găsit itemul selectat. Încearcă din nou.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const rawQty = interaction.fields.getTextInputValue("qty_input").trim();
+      const qty = Number(rawQty);
+
+      if (!Number.isInteger(qty) || qty <= 0) {
+        return interaction.reply({
+          content: "❌ Cantitatea trebuie să fie un număr întreg mai mare decât 0.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const cart = carts.get(interaction.user.id) || [];
+      const existing = cart.find((x) => x.itemName === itemName);
+
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        cart.push({ itemName, qty });
+      }
+
+      carts.set(interaction.user.id, cart);
+      pendingItem.delete(interaction.user.id);
+
+      return interaction.reply({
+        ...buildCalculatorUI(interaction.user.id, `Adăugat în coș: ${itemName} x${qty}`),
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    
     if (interaction.isChatInputCommand() && interaction.commandName === "setup-calculator") {
       await interaction.channel.send(buildOpenPanel());
 
@@ -546,6 +601,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
           flags: MessageFlags.Ephemeral,
         });
       }
+
+      pendingItem.set(interaction.user.id, itemName);
+
+      const currentGroup = selectedGroup.get(interaction.user.id) || "Pistoale";
+
+      // For Consumabile -> open typed quantity modal
+      if (currentGroup === "Consumabile") {
+        return interaction.showModal(buildConsumableQtyModal(itemName));
+      }
+
+      // For all other groups -> keep dropdown quantity
+      return interaction.update(
+        buildCalculatorUI(interaction.user.id, `Ai selectat ${itemName}.`)
+      );
+    }
 
       pendingItem.set(interaction.user.id, itemName);
 
