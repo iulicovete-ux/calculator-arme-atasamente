@@ -36,27 +36,27 @@ const GUILD_ID = mustEnv("GUILD_ID");
 // STATIC RECIPES
 // =========================
 const RECIPES = {
-  "Item 1": { "Otel": 8, "Suruburi": 80, "Arc Metalic": 1, "Polimer": 20 },
-  "Item 2": { "Otel": 8, "Suruburi": 85, "Polimer": 18 },
-  "Item 3": { "Otel": 9, "Suruburi": 91, "Arc Metalic": 1, "Polimer": 22 },
-  "Item 4": { "Otel": 9, "Suruburi": 91, "Arc Metalic": 1, "Polimer": 18 },
-  "Item 5": { "Otel": 10, "Suruburi": 95, "Arc Metalic": 1, "Polimer": 20 },
-  "Item 6": { "Otel": 15, "Suruburi": 95, "Arc Metalic": 1, "Polimer": 42, "Teava Metalica": 1 },
-  "Item 7": { "Otel": 12, "Suruburi": 100, "Arc Metalic": 1, "Polimer": 38 },
-  "Item 8": { "Otel": 11, "Suruburi": 97, "Arc Metalic": 1, "Polimer": 36, "Bucata de Lemn": 1 },
-  "Item 9": { "Otel": 14, "Suruburi": 115, "Arc Metalic": 1, "Polimer": 44, "Teava Metalica": 1 },
-  "Item 10": { "Otel": 13, "Suruburi": 105, "Arc Metalic": 1, "Polimer": 48, "Teava Metalica": 1 },
-  "Item 11": { "Otel": 14, "Suruburi": 110, "Arc Metalic": 1, "Polimer": 50, "Teava Metalica": 1 },
-  "Item 12": { "Otel": 21, "Suruburi": 135, "Arc Metalic": 2, "Polimer": 68, "Bucata de Lemn": 1, "Teava Metalica": 1 },
-  "Item 13": { "Otel": 19, "Suruburi": 115, "Arc Metalic": 2, "Polimer": 44, "Bucata de Lemn": 1, "Teava Metalica": 1 },
-  "Item 14": { "Otel": 18, "Suruburi": 140, "Arc Metalic": 2, "Polimer": 72, "Teava Metalica": 1 },
-  "Item 15": { "Otel": 18, "Suruburi": 145, "Arc Metalic": 2, "Polimer": 78, "Teava Metalica": 1 },
+  "Pistol": { "Otel": 8, "Suruburi": 80, "Arc Metalic": 1, "Polimer": 20 },
+  "Combat Pistol": { "Otel": 8, "Suruburi": 85, "Polimer": 18 },
+  "Pistol MK2": { "Otel": 9, "Suruburi": 91, "Arc Metalic": 1, "Polimer": 22 },
+  "Ceramic Pistol": { "Otel": 9, "Suruburi": 91, "Arc Metalic": 1, "Polimer": 18 },
+  "Pistol XM3": { "Otel": 10, "Suruburi": 95, "Arc Metalic": 1, "Polimer": 20 },
+  "Micro SMG": { "Otel": 15, "Suruburi": 95, "Arc Metalic": 1, "Polimer": 42, "Teava Metalica": 1 },
+  "TEC-9": { "Otel": 12, "Suruburi": 100, "Arc Metalic": 1, "Polimer": 38 },
+  "Mini SMG": { "Otel": 11, "Suruburi": 97, "Arc Metalic": 1, "Polimer": 36, "Bucata de Lemn": 1 },
+  "TEC-Pistol": { "Otel": 14, "Suruburi": 115, "Arc Metalic": 1, "Polimer": 44, "Teava Metalica": 1 },
+  "SMG": { "Otel": 13, "Suruburi": 105, "Arc Metalic": 1, "Polimer": 48, "Teava Metalica": 1 },
+  "Combat PDW": { "Otel": 14, "Suruburi": 110, "Arc Metalic": 1, "Polimer": 50, "Teava Metalica": 1 },
+  "Assault Rifle": { "Otel": 21, "Suruburi": 135, "Arc Metalic": 2, "Polimer": 68, "Bucata de Lemn": 1, "Teava Metalica": 1 },
+  "Compact Rifle": { "Otel": 19, "Suruburi": 115, "Arc Metalic": 2, "Polimer": 44, "Bucata de Lemn": 1, "Teava Metalica": 1 },
+  "Carabine Rifle": { "Otel": 18, "Suruburi": 140, "Arc Metalic": 2, "Polimer": 72, "Teava Metalica": 1 },
+  "Advanced Rifle": { "Otel": 18, "Suruburi": 145, "Arc Metalic": 2, "Polimer": 78, "Teava Metalica": 1 },
 };
 
 const GROUPS = {
-  "1": ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"],
-  "2": ["Item 6", "Item 7", "Item 8", "Item 9", "Item 10"],
-  "3": ["Item 11", "Item 12", "Item 13", "Item 14", "Item 15"],
+  "Pistoale": ["Pistol", "Combat Pistol", "Pistol MK2", "Ceramic Pistol", "Pistol XM3"],
+  "SMG-uri": ["Micro SMG", "TEC-9", "Mini SMG", "TEC-Pistol", "SMG"],
+  "Arme mari": ["Combat PDW", "Assault Rifle", "Compact Rifle", "Carabine Rifle", "Advanced Rifle"],
 };
 
 // =========================
@@ -122,16 +122,16 @@ function buildGroupButtons(userId) {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("calc_group_1")
-      .setLabel("Grupa 1")
-      .setStyle(currentGroup === "1" ? ButtonStyle.Primary : ButtonStyle.Secondary),
+      .setLabel("Pistoale")
+      .setStyle(currentGroup === "Pistoale" ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("calc_group_2")
-      .setLabel("Grupa 2")
-      .setStyle(currentGroup === "2" ? ButtonStyle.Primary : ButtonStyle.Secondary),
+      .setLabel("SMG-uri")
+      .setStyle(currentGroup === "SMG-uri" ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId("calc_group_3")
-      .setLabel("Grupa 3")
-      .setStyle(currentGroup === "3" ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setLabel("Arme mari")
+      .setStyle(currentGroup === "Arme mari" ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 }
 
@@ -142,7 +142,7 @@ function buildItemSelect(userId) {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId("calc_select_item")
-      .setPlaceholder("Alege un item...")
+      .setPlaceholder("Alege o arma...")
       .addOptions(
         items.map((itemName) => ({
           label: itemName,
@@ -157,7 +157,7 @@ function buildQtySelect() {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId("calc_select_qty")
-      .setPlaceholder("Alege cantitatea...")
+      .setPlaceholder("Cate arme vrei?")
       .addOptions(
         Array.from({ length: 20 }, (_, i) => ({
           label: `${i + 1}`,
@@ -200,11 +200,11 @@ function buildCalculatorUI(userId, notice = "") {
     `**Grupa curentă:** ${currentGroup}\n\n` +
     `**Coșul tău:**\n${formatCart(userId)}\n\n` +
     helperText +
-    `1. Alege grupa\n` +
-    `2. Alege itemul\n` +
+    `1. Alege tipul de arma\n` +
+    `2. Alege arma\n` +
     `3. Alege cantitatea\n` +
-    `4. Repetă pentru alte iteme\n` +
-    `5. Apasă **Calculează**`;
+    `4. Repetă pentru alte arme\n` +
+    `5. **Calculează**`;
 
   const components = [
     buildGroupButtons(userId),
