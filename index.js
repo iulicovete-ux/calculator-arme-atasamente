@@ -10,13 +10,18 @@ const {
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
   Events,
   MessageFlags,
 } = require("discord.js");
-const { Pool } = require("pg");
 
-console.log("✅ BOT VERSION: Crafting Calculator v1");
+console.log("✅ BOT VERSION: Crafting Calculator v2");
 
+// =========================
+// ENV
+// =========================
 function mustEnv(name) {
   const v = process.env[name];
   if (!v) {
@@ -29,141 +34,322 @@ function mustEnv(name) {
 const TOKEN = mustEnv("TOKEN");
 const CLIENT_ID = mustEnv("CLIENT_ID");
 const GUILD_ID = mustEnv("GUILD_ID");
-const DATABASE_URL = mustEnv("DATABASE_URL");
 
+// =========================
+// STATIC RECIPES
+// Rename items later in GitHub if you want
+// =========================
+const RECIPES = {
+  "Item 1": {
+    "Otel": 8,
+    "Suruburi": 80,
+    "Arc Metalic": 1,
+    "Polimer": 20,
+  },
+
+  "Item 2": {
+    "Otel": 8,
+    "Suruburi": 85,
+    "Polimer": 18,
+  },
+
+  "Item 3": {
+    "Otel": 9,
+    "Suruburi": 91,
+    "Arc Metalic": 1,
+    "Polimer": 22,
+  },
+
+  "Item 4": {
+    "Otel": 9,
+    "Suruburi": 91,
+    "Arc Metalic": 1,
+    "Polimer": 18,
+  },
+
+  "Item 5": {
+    "Otel": 10,
+    "Suruburi": 95,
+    "Arc Metalic": 1,
+    "Polimer": 20,
+  },
+
+  "Item 6": {
+    "Otel": 15,
+    "Suruburi": 95,
+    "Arc Metalic": 1,
+    "Polimer": 42,
+    "Teava Metalica": 1,
+  },
+
+  "Item 7": {
+    "Otel": 12,
+    "Suruburi": 100,
+    "Arc Metalic": 1,
+    "Polimer": 38,
+  },
+
+  "Item 8": {
+    "Otel": 11,
+    "Suruburi": 97,
+    "Arc Metalic": 1,
+    "Polimer": 36,
+    "Bucata de Lemn": 1,
+  },
+
+  "Item 9": {
+    "Otel": 14,
+    "Suruburi": 115,
+    "Arc Metalic": 1,
+    "Polimer": 44,
+    "Teava Metalica": 1,
+  },
+
+  "Item 10": {
+    "Otel": 13,
+    "Suruburi": 105,
+    "Arc Metalic": 1,
+    "Polimer": 48,
+    "Teava Metalica": 1,
+  },
+
+  "Item 11": {
+    "Otel": 14,
+    "Suruburi": 110,
+    "Arc Metalic": 1,
+    "Polimer": 50,
+    "Teava Metalica": 1,
+  },
+
+  "Item 12": {
+    "Otel": 21,
+    "Suruburi": 135,
+    "Arc Metalic": 2,
+    "Polimer": 68,
+    "Bucata de Lemn": 1,
+    "Teava Metalica": 1,
+  },
+
+  "Item 13": {
+    "Otel": 19,
+    "Suruburi": 115,
+    "Arc Metalic": 2,
+    "Polimer": 44,
+    "Bucata de Lemn": 1,
+    "Teava Metalica": 1,
+  },
+
+  "Item 14": {
+    "Otel": 18,
+    "Suruburi": 140,
+    "Arc Metalic": 2,
+    "Polimer": 72,
+    "Teava Metalica": 1,
+  },
+
+  "Item 15": {
+    "Otel": 18,
+    "Suruburi": 145,
+    "Arc Metalic": 2,
+    "Polimer": 78,
+    "Teava Metalica": 1,
+  },
+};
+
+const GROUPS = {
+  "1": ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"],
+  "2": ["Item 6", "Item 7", "Item 8", "Item 9", "Item 10"],
+  "3": ["Item 11", "Item 12", "Item 13", "Item 14", "Item 15"],
+};
+
+// =========================
+// DISCORD CLIENT
+// =========================
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-});
-
-// userId -> [{ itemId, itemName, qty }]
+// =========================
+// IN-MEMORY USER STATE
+// =========================
+// userId -> [{ itemName, qty }]
 const carts = new Map();
-// userId -> { itemId, itemName }
+
+// userId -> selected item waiting for quantity
 const pendingItem = new Map();
 
-async function dbInit() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS craft_items (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE
-    );
-  `);
+// userId -> current group page
+const selectedGroup = new Map();
 
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS materials (
-      id SERIAL PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS recipes (
-      item_id INT NOT NULL REFERENCES craft_items(id) ON DELETE CASCADE,
-      material_id INT NOT NULL REFERENCES materials(id) ON DELETE CASCADE,
-      amount INT NOT NULL CHECK (amount > 0),
-      PRIMARY KEY (item_id, material_id)
-    );
-  `);
+// =========================
+// HELPERS
+// =========================
+function getAllItems() {
+  return Object.keys(RECIPES);
 }
 
-async function ensureItem(name) {
-  const result = await pool.query(
-    `
-    INSERT INTO craft_items(name)
-    VALUES ($1)
-    ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
-    RETURNING id, name
-    `,
-    [name.trim()]
-  );
-  return result.rows[0];
+function formatCart(userId) {
+  const cart = carts.get(userId) || [];
+  if (cart.length === 0) return "Coșul este gol.";
+
+  return cart
+    .map((entry, index) => `${index + 1}. **${entry.itemName}** x${entry.qty}`)
+    .join("\n");
 }
 
-async function ensureMaterial(name) {
-  const result = await pool.query(
-    `
-    INSERT INTO materials(name)
-    VALUES ($1)
-    ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
-    RETURNING id, name
-    `,
-    [name.trim()]
-  );
-  return result.rows[0];
-}
+function calculateTotals(cart) {
+  const totals = new Map();
 
-async function addRecipe(itemName, materialName, amount) {
-  const item = await ensureItem(itemName);
-  const material = await ensureMaterial(materialName);
+  for (const entry of cart) {
+    const recipe = RECIPES[entry.itemName];
+    if (!recipe) continue;
 
-  await pool.query(
-    `
-    INSERT INTO recipes(item_id, material_id, amount)
-    VALUES ($1, $2, $3)
-    ON CONFLICT (item_id, material_id)
-    DO UPDATE SET amount = EXCLUDED.amount
-    `,
-    [item.id, material.id, amount]
-  );
-}
-
-async function getItems() {
-  const result = await pool.query(
-    `SELECT id, name FROM craft_items ORDER BY name ASC`
-  );
-  return result.rows;
-}
-
-async function getRecipeForItem(itemId) {
-  const result = await pool.query(
-    `
-    SELECT m.name AS material_name, r.amount
-    FROM recipes r
-    JOIN materials m ON m.id = r.material_id
-    WHERE r.item_id = $1
-    ORDER BY m.name ASC
-    `,
-    [itemId]
-  );
-  return result.rows;
-}
-
-async function seedDemoData() {
-  const demo = [
-    {
-      item: "Item 1",
-      recipe: {
-        "Material A": 8,
-        "Material B": 80,
-        "Material C": 1,
-      },
-    },
-    {
-      item: "Item 2",
-      recipe: {
-        "Material A": 10,
-        "Material B": 95,
-        "Material D": 20,
-      },
-    },
-    {
-      item: "Item 3",
-      recipe: {
-        "Material A": 15,
-        "Material C": 2,
-        "Material E": 12,
-      },
-    },
-  ];
-
-  for (const entry of demo) {
-    for (const [mat, qty] of Object.entries(entry.recipe)) {
-      await addRecipe(entry.item, mat, qty);
+    for (const [material, amountPerUnit] of Object.entries(recipe)) {
+      const current = totals.get(material) || 0;
+      totals.set(material, current + amountPerUnit * entry.qty);
     }
   }
+
+  return Array.from(totals.entries()).sort((a, b) => a[0].localeCompare(b[0], "ro"));
+}
+
+function buildOpenPanel() {
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("calc_open")
+      .setLabel("Deschide Calculatorul")
+      .setStyle(ButtonStyle.Primary)
+  );
+
+  return {
+    content:
+      "**Calculator Crafting**\nApasă pe buton pentru a deschide calculatorul.\nSelecția și calculele tale vor fi private.",
+    components: [row],
+  };
+}
+
+function buildGroupButtons(userId) {
+  const currentGroup = selectedGroup.get(userId) || "1";
+
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("calc_group_1")
+      .setLabel("Grupa 1")
+      .setStyle(currentGroup === "1" ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId("calc_group_2")
+      .setLabel("Grupa 2")
+      .setStyle(currentGroup === "2" ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId("calc_group_3")
+      .setLabel("Grupa 3")
+      .setStyle(currentGroup === "3" ? ButtonStyle.Primary : ButtonStyle.Secondary)
+  );
+}
+
+function buildItemSelect(userId) {
+  const currentGroup = selectedGroup.get(userId) || "1";
+  const items = GROUPS[currentGroup] || [];
+
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId("calc_select_item")
+    .setPlaceholder("Alege un item...")
+    .addOptions(
+      items.map((itemName) => ({
+        label: itemName,
+        value: itemName,
+        description: `Adaugă ${itemName} în coș`,
+      }))
+    );
+
+  return new ActionRowBuilder().addComponents(menu);
+}
+
+function buildActionButtons(userId) {
+  const cart = carts.get(userId) || [];
+
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("calc_finish")
+      .setLabel("Calculează")
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(cart.length === 0),
+    new ButtonBuilder()
+      .setCustomId("calc_clear")
+      .setLabel("Golește coșul")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(cart.length === 0)
+  );
+}
+
+function buildCalculatorUI(userId, notice = "") {
+  const currentGroup = selectedGroup.get(userId) || "1";
+
+  const content =
+    `${notice ? `**${notice}**\n\n` : ""}` +
+    `**Calculator privat**\n` +
+    `**Grupa curentă:** ${currentGroup}\n\n` +
+    `**Coșul tău:**\n${formatCart(userId)}\n\n` +
+    `1. Alege grupa\n` +
+    `2. Alege itemul\n` +
+    `3. Introdu cantitatea\n` +
+    `4. Repetă pentru alte iteme\n` +
+    `5. Apasă **Calculează**`;
+
+  return {
+    content,
+    components: [
+      buildGroupButtons(userId),
+      buildItemSelect(userId),
+      buildActionButtons(userId),
+    ],
+  };
+}
+
+function buildResultMessage(userId) {
+  const cart = carts.get(userId) || [];
+  const totals = calculateTotals(cart);
+
+  const totalsText =
+    totals.length > 0
+      ? totals.map(([name, qty]) => `• **${name}**: ${qty}`).join("\n")
+      : "Nu există materiale de calculat.";
+
+  return {
+    content:
+      `**Rezultat calcul privat**\n\n` +
+      `**Coșul tău:**\n${formatCart(userId)}\n\n` +
+      `**Materiale totale necesare:**\n${totalsText}`,
+    components: [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("calc_open")
+          .setLabel("Înapoi la calculator")
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("calc_clear")
+          .setLabel("Golește coșul")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled((carts.get(userId) || []).length === 0)
+      ),
+    ],
+  };
+}
+
+function buildQtyModal(itemName) {
+  return new ModalBuilder()
+    .setCustomId("calc_qty_modal")
+    .setTitle(`Cantitate pentru ${itemName}`)
+    .addComponents(
+      new ActionRowBuilder().addComponents(
+        new TextInputBuilder()
+          .setCustomId("qty")
+          .setLabel("Introdu cantitatea")
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder("Ex: 3")
+          .setRequired(true)
+      )
+    );
 }
 
 async function registerCommands() {
@@ -171,51 +357,6 @@ async function registerCommands() {
     new SlashCommandBuilder()
       .setName("setup-calculator")
       .setDescription("Postează panoul public al calculatorului în canalul curent.")
-      .toJSON(),
-
-    new SlashCommandBuilder()
-      .setName("seed-demo-data")
-      .setDescription("Adaugă câteva iteme demo în baza de date.")
-      .toJSON(),
-
-    new SlashCommandBuilder()
-      .setName("add-item")
-      .setDescription("Adaugă un item nou în baza de date.")
-      .addStringOption((option) =>
-        option
-          .setName("nume")
-          .setDescription("Numele itemului")
-          .setRequired(true)
-      )
-      .toJSON(),
-
-    new SlashCommandBuilder()
-      .setName("add-recipe")
-      .setDescription("Adaugă sau actualizează o rețetă pentru un item.")
-      .addStringOption((option) =>
-        option
-          .setName("item")
-          .setDescription("Numele itemului")
-          .setRequired(true)
-      )
-      .addStringOption((option) =>
-        option
-          .setName("material")
-          .setDescription("Numele materialului")
-          .setRequired(true)
-      )
-      .addIntegerOption((option) =>
-        option
-          .setName("cantitate")
-          .setDescription("Cantitatea materialului pentru 1 item")
-          .setRequired(true)
-          .setMinValue(1)
-      )
-      .toJSON(),
-
-    new SlashCommandBuilder()
-      .setName("list-items")
-      .setDescription("Afișează itemele disponibile în calculator.")
       .toJSON(),
   ];
 
@@ -229,265 +370,151 @@ async function registerCommands() {
   console.log("✅ Slash commands registered.");
 }
 
-function buildOpenPanel() {
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("calc_open")
-      .setLabel("Deschide Calculatorul")
-      .setStyle(ButtonStyle.Primary)
-  );
-
-  return {
-    content: "**Calculator Crafting**\nApasă pe buton pentru a deschide calculatorul.",
-    components: [row],
-  };
-}
-
-function formatCart(cart) {
-  if (!cart || cart.length === 0) return "Coșul este gol.";
-  return cart
-    .map((entry, idx) => `${idx + 1}. **${entry.itemName}** x${entry.qty}`)
-    .join("\n");
-}
-
-async function buildCalculatorUI(userId) {
-  const items = await getItems();
-  const cart = carts.get(userId) || [];
-
-  if (items.length === 0) {
-    return {
-      content:
-        "Nu există iteme în calculator încă.\nFolosește `/seed-demo-data` pentru test sau `/add-item` + `/add-recipe`.",
-      components: [],
-    };
-  }
-
-  const itemSelect = new StringSelectMenuBuilder()
-    .setCustomId("calc_select_item")
-    .setPlaceholder("Alege un item…")
-    .addOptions(
-      items.slice(0, 25).map((item) => ({
-        label: item.name,
-        value: String(item.id),
-        description: `Adaugă ${item.name} în coș`,
-      }))
-    );
-
-  const qtySelect = new StringSelectMenuBuilder()
-    .setCustomId("calc_select_qty")
-    .setPlaceholder("Alege cantitatea pentru itemul selectat…")
-    .addOptions(
-      Array.from({ length: 20 }, (_, i) => ({
-        label: `${i + 1}`,
-        value: `${i + 1}`,
-        description: `Cantitate ${i + 1}`,
-      }))
-    );
-
-  const buttons = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("calc_finish")
-      .setLabel("Calculează")
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId("calc_clear")
-      .setLabel("Golește coșul")
-      .setStyle(ButtonStyle.Secondary)
-  );
-
-  return {
-    content:
-      `**Calculator privat**\n\n` +
-      `**Coșul tău:**\n${formatCart(cart)}\n\n` +
-      `1. Alege itemul\n` +
-      `2. Alege cantitatea\n` +
-      `3. Repetă pentru alte iteme\n` +
-      `4. Apasă **Calculează**`,
-    components: [
-      new ActionRowBuilder().addComponents(itemSelect),
-      new ActionRowBuilder().addComponents(qtySelect),
-      buttons,
-    ],
-  };
-}
-
-async function calculateTotals(cart) {
-  const totals = new Map();
-
-  for (const entry of cart) {
-    const recipe = await getRecipeForItem(entry.itemId);
-
-    for (const row of recipe) {
-      const current = totals.get(row.material_name) || 0;
-      totals.set(row.material_name, current + row.amount * entry.qty);
-    }
-  }
-
-  return Array.from(totals.entries()).sort((a, b) => a[0].localeCompare(b[0], "ro"));
-}
-
+// =========================
+// READY
+// =========================
 client.once(Events.ClientReady, async () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
-  await dbInit();
   await registerCommands();
 });
 
+// =========================
+// INTERACTIONS
+// =========================
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
-    if (interaction.isChatInputCommand()) {
-      if (interaction.commandName === "setup-calculator") {
-        await interaction.channel.send(buildOpenPanel());
-        return interaction.reply({
-          content: "✅ Panoul calculatorului a fost postat în acest canal.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+    // Slash command: post public panel
+    if (interaction.isChatInputCommand() && interaction.commandName === "setup-calculator") {
+      await interaction.channel.send(buildOpenPanel());
 
-      if (interaction.commandName === "seed-demo-data") {
-        await seedDemoData();
-        return interaction.reply({
-          content: "✅ Datele demo au fost adăugate.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-
-      if (interaction.commandName === "add-item") {
-        const name = interaction.options.getString("nume", true);
-        await ensureItem(name);
-        return interaction.reply({
-          content: `✅ Item adăugat: **${name}**`,
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-
-      if (interaction.commandName === "add-recipe") {
-        const item = interaction.options.getString("item", true);
-        const material = interaction.options.getString("material", true);
-        const qty = interaction.options.getInteger("cantitate", true);
-
-        await addRecipe(item, material, qty);
-
-        return interaction.reply({
-          content: `✅ Rețetă salvată: **${item}** → **${material}** x${qty}`,
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-
-      if (interaction.commandName === "list-items") {
-        const items = await getItems();
-        return interaction.reply({
-          content:
-            items.length > 0
-              ? items.map((x, i) => `${i + 1}. ${x.name}`).join("\n")
-              : "Nu există iteme în baza de date.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return interaction.reply({
+        content: "✅ Panoul calculatorului a fost postat în acest canal.",
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
-    if (interaction.isButton()) {
-      if (interaction.customId === "calc_open") {
-        const ui = await buildCalculatorUI(interaction.user.id);
-        return interaction.reply({
-          ...ui,
-          flags: MessageFlags.Ephemeral,
-        });
+    // Public/open button
+    if (interaction.isButton() && interaction.customId === "calc_open") {
+      if (!selectedGroup.has(interaction.user.id)) {
+        selectedGroup.set(interaction.user.id, "1");
       }
 
-      if (interaction.customId === "calc_clear") {
-        carts.delete(interaction.user.id);
-        pendingItem.delete(interaction.user.id);
+      const ui = buildCalculatorUI(interaction.user.id);
 
-        const ui = await buildCalculatorUI(interaction.user.id);
-        return interaction.reply({
-          ...ui,
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-
-      if (interaction.customId === "calc_finish") {
-        const cart = carts.get(interaction.user.id) || [];
-
-        if (cart.length === 0) {
-          return interaction.reply({
-            content: "❌ Coșul tău este gol.",
-            flags: MessageFlags.Ephemeral,
-          });
-        }
-
-        const totals = await calculateTotals(cart);
-
-        const resultText =
-          totals.length > 0
-            ? totals.map(([name, qty]) => `• **${name}**: ${qty}`).join("\n")
-            : "Nu există materiale pentru itemele selectate.";
-
-        return interaction.reply({
-          content:
-            `**Rezultat calcul privat**\n\n` +
-            `**Coș:**\n${formatCart(cart)}\n\n` +
-            `**Materiale totale necesare:**\n${resultText}`,
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return interaction.reply({
+        ...ui,
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
-    if (interaction.isStringSelectMenu()) {
-      if (interaction.customId === "calc_select_item") {
-        const items = await getItems();
-        const chosen = items.find((x) => String(x.id) === interaction.values[0]);
+    // Group buttons
+    if (interaction.isButton() && interaction.customId.startsWith("calc_group_")) {
+      const groupId = interaction.customId.replace("calc_group_", "");
+      selectedGroup.set(interaction.user.id, groupId);
 
-        if (!chosen) {
-          return interaction.reply({
-            content: "❌ Item invalid.",
-            flags: MessageFlags.Ephemeral,
-          });
-        }
+      const ui = buildCalculatorUI(interaction.user.id);
 
-        pendingItem.set(interaction.user.id, {
-          itemId: chosen.id,
-          itemName: chosen.name,
-        });
+      return interaction.update(ui);
+    }
 
+    // Clear cart
+    if (interaction.isButton() && interaction.customId === "calc_clear") {
+      carts.delete(interaction.user.id);
+      pendingItem.delete(interaction.user.id);
+
+      const ui = buildCalculatorUI(interaction.user.id, "Coșul a fost golit.");
+
+      if (interaction.message.flags?.has?.(MessageFlags.Ephemeral)) {
+        return interaction.update(ui);
+      }
+
+      return interaction.reply({
+        ...ui,
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // Finish / calculate
+    if (interaction.isButton() && interaction.customId === "calc_finish") {
+      const cart = carts.get(interaction.user.id) || [];
+
+      if (cart.length === 0) {
         return interaction.reply({
-          content: `✅ Ai selectat **${chosen.name}**.\nAcum alege cantitatea din meniul de mai jos.`,
+          content: "❌ Coșul tău este gol.",
           flags: MessageFlags.Ephemeral,
         });
       }
 
-      if (interaction.customId === "calc_select_qty") {
-        const selected = pendingItem.get(interaction.user.id);
+      const result = buildResultMessage(interaction.user.id);
 
-        if (!selected) {
-          return interaction.reply({
-            content: "❌ Mai întâi selectează un item.",
-            flags: MessageFlags.Ephemeral,
-          });
-        }
+      if (interaction.message.flags?.has?.(MessageFlags.Ephemeral)) {
+        return interaction.update(result);
+      }
 
-        const qty = Number(interaction.values[0]);
-        const cart = carts.get(interaction.user.id) || [];
+      return interaction.reply({
+        ...result,
+        flags: MessageFlags.Ephemeral,
+      });
+    }
 
-        const existing = cart.find((x) => x.itemId === selected.itemId);
-        if (existing) {
-          existing.qty += qty;
-        } else {
-          cart.push({
-            itemId: selected.itemId,
-            itemName: selected.itemName,
-            qty,
-          });
-        }
+    // Item select
+    if (interaction.isStringSelectMenu() && interaction.customId === "calc_select_item") {
+      const itemName = interaction.values[0];
 
-        carts.set(interaction.user.id, cart);
-        pendingItem.delete(interaction.user.id);
-
-        const ui = await buildCalculatorUI(interaction.user.id);
+      if (!RECIPES[itemName]) {
         return interaction.reply({
-          ...ui,
+          content: "❌ Item invalid.",
           flags: MessageFlags.Ephemeral,
         });
       }
+
+      pendingItem.set(interaction.user.id, itemName);
+
+      return interaction.showModal(buildQtyModal(itemName));
+    }
+
+    // Quantity modal
+    if (interaction.isModalSubmit() && interaction.customId === "calc_qty_modal") {
+      const itemName = pendingItem.get(interaction.user.id);
+
+      if (!itemName || !RECIPES[itemName]) {
+        return interaction.reply({
+          content: "❌ Nu am găsit itemul selectat. Încearcă din nou.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const rawQty = interaction.fields.getTextInputValue("qty").trim();
+      const qty = Number(rawQty);
+
+      if (!Number.isInteger(qty) || qty <= 0) {
+        return interaction.reply({
+          content: "❌ Cantitatea trebuie să fie un număr întreg mai mare decât 0.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+
+      const cart = carts.get(interaction.user.id) || [];
+      const existing = cart.find((x) => x.itemName === itemName);
+
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        cart.push({ itemName, qty });
+      }
+
+      carts.set(interaction.user.id, cart);
+      pendingItem.delete(interaction.user.id);
+
+      const ui = buildCalculatorUI(
+        interaction.user.id,
+        `Adăugat în coș: ${itemName} x${qty}`
+      );
+
+      return interaction.reply({
+        ...ui,
+        flags: MessageFlags.Ephemeral,
+      });
     }
   } catch (err) {
     console.error("❌ Interaction error:", err);
