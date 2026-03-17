@@ -92,6 +92,24 @@ const RECIPES = {
   "Luneta Assault Rifle": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Lupa": 1 },
 
   "Grip Assault Rifle": { "Otel": 1, "Suruburi": 5, "Polimer": 1 },
+
+  "Munitie DB": { "Praf de Pusca": 5 },
+  "Munitie Gusenberg": { "Praf de Pusca": 1.8 },
+  "Munitie Advance Rifle": { "Praf de Pusca": 3 },
+  "Munitie Carabine Rifle": { "Praf de Pusca": 3 },
+  "Munitie Compact Rifle": { "Praf de Pusca": 2.5 },
+  "Munitie Assault Rifle": { "Praf de Pusca": 2.5 },
+  "Munitie Combat PDW": { "Praf de Pusca": 1.8 },
+  "Munitie SMG": { "Praf de Pusca": 1.8 },
+  "Munitie Tec Pistol": { "Praf de Pusca": 1.8 },
+  "Munitie Mini-SMG": { "Praf de Pusca": 1.5 },
+  "Munitie Micro SMG": { "Praf de Pusca": 1.5 },
+  "Munitie Tec-9": { "Praf de Pusca": 1.5 },
+  "Munitie Pistol XM3": { "Praf de Pusca": 1.3 },
+  "Munitie Ceramic Pistol": { "Praf de Pusca": 1.3 },
+  "Munitie Pistol MK2": { "Praf de Pusca": 1.3 },
+  "Munitie Combat Pistol": { "Praf de Pusca": 1 },
+  "Munitie Pistol": {"Praf de Pusca": 1 },
 };
 
 const GROUPS = {
@@ -146,6 +164,26 @@ const GROUPS = {
     "Luneta Assault Rifle"
   ],
   "Grip": ["Grip Assault Rifle"],
+
+  "Gloante": [
+    "Munitie DB",
+    "Munitie Gusenberg",
+    "Munitie Advance Rifle",
+    "Munitie Carabine Rifle",
+    "Munitie Compact Rifle",
+    "Munitie Assault Rifle",
+    "Munitie Combat PDW",
+    "Munitie SMG",
+    "Munitie Tec Pistol",
+    "Munitie Mini-SMG",
+    "Munitie Micro SMG",
+    "Munitie Tec-9",
+    "Munitie Pistol XM3",
+    "Munitie Ceramic Pistol",
+    "Munitie Pistol MK2",
+    "Munitie Combat Pistol",
+    "Munitie Pistol"
+  ],
 };
 
 const client = new Client({
@@ -238,7 +276,11 @@ function buildGroupButtons2(userId) {
     new ButtonBuilder()
       .setCustomId("calc_group_grip")
       .setLabel("Grip")
-      .setStyle(currentGroup === "Grip" ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setStyle(currentGroup === "Grip" ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId("calc_group_gloante")
+      .setLabel("Gloante")
+      .setStyle(currentGroup === "Gloante" ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 }
 
@@ -249,7 +291,7 @@ function buildItemSelect(userId) {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId("calc_select_item")
-      .setPlaceholder("Alege arma/atasamentul")
+      .setPlaceholder("Alege arma/atasamentul/gloantele")
       .addOptions(
         items.map((itemName) => ({
           label: itemName.slice(0, 100),
@@ -307,9 +349,9 @@ function buildCalculatorUI(userId, notice = "") {
     `**Coșul tău:**\n${formatCart(userId)}\n\n` +
     helperText +
     `1. Alege grupa\n` +
-    `2. Alege arma/atasamentul\n` +
+    `2. Alege arma/atasamentul/gloantele\n` +
     `3. Alege cantitatea\n` +
-    `4. Repetă pentru alte arme/atasamente\n` +
+    `4. Repetă pentru alte arme/atasamente/gloante\n` +
     `5. **Calculează**`;
 
   const components = [
@@ -447,6 +489,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isButton() && interaction.customId === "calc_group_grip") {
       selectedGroup.set(interaction.user.id, "Grip");
+      pendingItem.delete(interaction.user.id);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
+    }
+    
+    if (interaction.isButton() && interaction.customId === "calc_group_consumabile") {
+      selectedGroup.set(interaction.user.id, "Consumabile");
       pendingItem.delete(interaction.user.id);
       return interaction.update(buildCalculatorUI(interaction.user.id));
     }
