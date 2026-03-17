@@ -10,14 +10,11 @@ const {
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
   Events,
   MessageFlags,
 } = require("discord.js");
 
-console.log("✅ BOT VERSION: Crafting Calculator v2");
+console.log("✅ BOT VERSION: Crafting Calculator v3");
 
 // =========================
 // ENV
@@ -37,123 +34,23 @@ const GUILD_ID = mustEnv("GUILD_ID");
 
 // =========================
 // STATIC RECIPES
-// Rename items later in GitHub if you want
 // =========================
 const RECIPES = {
-  "Item 1": {
-    "Otel": 8,
-    "Suruburi": 80,
-    "Arc Metalic": 1,
-    "Polimer": 20,
-  },
-
-  "Item 2": {
-    "Otel": 8,
-    "Suruburi": 85,
-    "Polimer": 18,
-  },
-
-  "Item 3": {
-    "Otel": 9,
-    "Suruburi": 91,
-    "Arc Metalic": 1,
-    "Polimer": 22,
-  },
-
-  "Item 4": {
-    "Otel": 9,
-    "Suruburi": 91,
-    "Arc Metalic": 1,
-    "Polimer": 18,
-  },
-
-  "Item 5": {
-    "Otel": 10,
-    "Suruburi": 95,
-    "Arc Metalic": 1,
-    "Polimer": 20,
-  },
-
-  "Item 6": {
-    "Otel": 15,
-    "Suruburi": 95,
-    "Arc Metalic": 1,
-    "Polimer": 42,
-    "Teava Metalica": 1,
-  },
-
-  "Item 7": {
-    "Otel": 12,
-    "Suruburi": 100,
-    "Arc Metalic": 1,
-    "Polimer": 38,
-  },
-
-  "Item 8": {
-    "Otel": 11,
-    "Suruburi": 97,
-    "Arc Metalic": 1,
-    "Polimer": 36,
-    "Bucata de Lemn": 1,
-  },
-
-  "Item 9": {
-    "Otel": 14,
-    "Suruburi": 115,
-    "Arc Metalic": 1,
-    "Polimer": 44,
-    "Teava Metalica": 1,
-  },
-
-  "Item 10": {
-    "Otel": 13,
-    "Suruburi": 105,
-    "Arc Metalic": 1,
-    "Polimer": 48,
-    "Teava Metalica": 1,
-  },
-
-  "Item 11": {
-    "Otel": 14,
-    "Suruburi": 110,
-    "Arc Metalic": 1,
-    "Polimer": 50,
-    "Teava Metalica": 1,
-  },
-
-  "Item 12": {
-    "Otel": 21,
-    "Suruburi": 135,
-    "Arc Metalic": 2,
-    "Polimer": 68,
-    "Bucata de Lemn": 1,
-    "Teava Metalica": 1,
-  },
-
-  "Item 13": {
-    "Otel": 19,
-    "Suruburi": 115,
-    "Arc Metalic": 2,
-    "Polimer": 44,
-    "Bucata de Lemn": 1,
-    "Teava Metalica": 1,
-  },
-
-  "Item 14": {
-    "Otel": 18,
-    "Suruburi": 140,
-    "Arc Metalic": 2,
-    "Polimer": 72,
-    "Teava Metalica": 1,
-  },
-
-  "Item 15": {
-    "Otel": 18,
-    "Suruburi": 145,
-    "Arc Metalic": 2,
-    "Polimer": 78,
-    "Teava Metalica": 1,
-  },
+  "Item 1": { "Otel": 8, "Suruburi": 80, "Arc Metalic": 1, "Polimer": 20 },
+  "Item 2": { "Otel": 8, "Suruburi": 85, "Polimer": 18 },
+  "Item 3": { "Otel": 9, "Suruburi": 91, "Arc Metalic": 1, "Polimer": 22 },
+  "Item 4": { "Otel": 9, "Suruburi": 91, "Arc Metalic": 1, "Polimer": 18 },
+  "Item 5": { "Otel": 10, "Suruburi": 95, "Arc Metalic": 1, "Polimer": 20 },
+  "Item 6": { "Otel": 15, "Suruburi": 95, "Arc Metalic": 1, "Polimer": 42, "Teava Metalica": 1 },
+  "Item 7": { "Otel": 12, "Suruburi": 100, "Arc Metalic": 1, "Polimer": 38 },
+  "Item 8": { "Otel": 11, "Suruburi": 97, "Arc Metalic": 1, "Polimer": 36, "Bucata de Lemn": 1 },
+  "Item 9": { "Otel": 14, "Suruburi": 115, "Arc Metalic": 1, "Polimer": 44, "Teava Metalica": 1 },
+  "Item 10": { "Otel": 13, "Suruburi": 105, "Arc Metalic": 1, "Polimer": 48, "Teava Metalica": 1 },
+  "Item 11": { "Otel": 14, "Suruburi": 110, "Arc Metalic": 1, "Polimer": 50, "Teava Metalica": 1 },
+  "Item 12": { "Otel": 21, "Suruburi": 135, "Arc Metalic": 2, "Polimer": 68, "Bucata de Lemn": 1, "Teava Metalica": 1 },
+  "Item 13": { "Otel": 19, "Suruburi": 115, "Arc Metalic": 2, "Polimer": 44, "Bucata de Lemn": 1, "Teava Metalica": 1 },
+  "Item 14": { "Otel": 18, "Suruburi": 140, "Arc Metalic": 2, "Polimer": 72, "Teava Metalica": 1 },
+  "Item 15": { "Otel": 18, "Suruburi": 145, "Arc Metalic": 2, "Polimer": 78, "Teava Metalica": 1 },
 };
 
 const GROUPS = {
@@ -172,22 +69,13 @@ const client = new Client({
 // =========================
 // IN-MEMORY USER STATE
 // =========================
-// userId -> [{ itemName, qty }]
-const carts = new Map();
-
-// userId -> selected item waiting for quantity
-const pendingItem = new Map();
-
-// userId -> current group page
-const selectedGroup = new Map();
+const carts = new Map();        // userId -> [{ itemName, qty }]
+const pendingItem = new Map();  // userId -> selected item name
+const selectedGroup = new Map();// userId -> "1" | "2" | "3"
 
 // =========================
 // HELPERS
 // =========================
-function getAllItems() {
-  return Object.keys(RECIPES);
-}
-
 function formatCart(userId) {
   const cart = carts.get(userId) || [];
   if (cart.length === 0) return "Coșul este gol.";
@@ -214,17 +102,17 @@ function calculateTotals(cart) {
 }
 
 function buildOpenPanel() {
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("calc_open")
-      .setLabel("Deschide Calculatorul")
-      .setStyle(ButtonStyle.Primary)
-  );
-
   return {
     content:
       "**Calculator Crafting**\nApasă pe buton pentru a deschide calculatorul.\nSelecția și calculele tale vor fi private.",
-    components: [row],
+    components: [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("calc_open")
+          .setLabel("Deschide Calculatorul")
+          .setStyle(ButtonStyle.Primary)
+      ),
+    ],
   };
 }
 
@@ -251,18 +139,33 @@ function buildItemSelect(userId) {
   const currentGroup = selectedGroup.get(userId) || "1";
   const items = GROUPS[currentGroup] || [];
 
-  const menu = new StringSelectMenuBuilder()
-    .setCustomId("calc_select_item")
-    .setPlaceholder("Alege un item...")
-    .addOptions(
-      items.map((itemName) => ({
-        label: itemName,
-        value: itemName,
-        description: `Adaugă ${itemName} în coș`,
-      }))
-    );
+  return new ActionRowBuilder().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId("calc_select_item")
+      .setPlaceholder("Alege un item...")
+      .addOptions(
+        items.map((itemName) => ({
+          label: itemName,
+          value: itemName,
+          description: `Selectează ${itemName}`,
+        }))
+      )
+  );
+}
 
-  return new ActionRowBuilder().addComponents(menu);
+function buildQtySelect() {
+  return new ActionRowBuilder().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId("calc_select_qty")
+      .setPlaceholder("Alege cantitatea...")
+      .addOptions(
+        Array.from({ length: 20 }, (_, i) => ({
+          label: `${i + 1}`,
+          value: `${i + 1}`,
+          description: `Cantitate ${i + 1}`,
+        }))
+      )
+  );
 }
 
 function buildActionButtons(userId) {
@@ -284,26 +187,37 @@ function buildActionButtons(userId) {
 
 function buildCalculatorUI(userId, notice = "") {
   const currentGroup = selectedGroup.get(userId) || "1";
+  const selected = pendingItem.get(userId);
+
+  let helperText = "";
+  if (selected) {
+    helperText = `**Item selectat:** ${selected}\nAlege cantitatea pentru acest item.\n\n`;
+  }
 
   const content =
     `${notice ? `**${notice}**\n\n` : ""}` +
     `**Calculator privat**\n` +
     `**Grupa curentă:** ${currentGroup}\n\n` +
     `**Coșul tău:**\n${formatCart(userId)}\n\n` +
+    helperText +
     `1. Alege grupa\n` +
     `2. Alege itemul\n` +
-    `3. Introdu cantitatea\n` +
+    `3. Alege cantitatea\n` +
     `4. Repetă pentru alte iteme\n` +
     `5. Apasă **Calculează**`;
 
-  return {
-    content,
-    components: [
-      buildGroupButtons(userId),
-      buildItemSelect(userId),
-      buildActionButtons(userId),
-    ],
-  };
+  const components = [
+    buildGroupButtons(userId),
+    buildItemSelect(userId),
+  ];
+
+  if (selected) {
+    components.push(buildQtySelect());
+  }
+
+  components.push(buildActionButtons(userId));
+
+  return { content, components };
 }
 
 function buildResultMessage(userId) {
@@ -334,22 +248,6 @@ function buildResultMessage(userId) {
       ),
     ],
   };
-}
-
-function buildQtyModal(itemName) {
-  return new ModalBuilder()
-    .setCustomId("calc_qty_modal")
-    .setTitle(`Cantitate pentru ${itemName}`)
-    .addComponents(
-      new ActionRowBuilder().addComponents(
-        new TextInputBuilder()
-          .setCustomId("qty")
-          .setLabel("Introdu cantitatea")
-          .setStyle(TextInputStyle.Short)
-          .setPlaceholder("Ex: 3")
-          .setRequired(true)
-      )
-    );
 }
 
 async function registerCommands() {
@@ -383,7 +281,6 @@ client.once(Events.ClientReady, async () => {
 // =========================
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
-    // Slash command: post public panel
     if (interaction.isChatInputCommand() && interaction.commandName === "setup-calculator") {
       await interaction.channel.send(buildOpenPanel());
 
@@ -393,11 +290,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
     }
 
-    // Public/open button
     if (interaction.isButton() && interaction.customId === "calc_open") {
       if (!selectedGroup.has(interaction.user.id)) {
         selectedGroup.set(interaction.user.id, "1");
       }
+
+      pendingItem.delete(interaction.user.id);
 
       const ui = buildCalculatorUI(interaction.user.id);
 
@@ -407,17 +305,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
     }
 
-    // Group buttons
     if (interaction.isButton() && interaction.customId.startsWith("calc_group_")) {
       const groupId = interaction.customId.replace("calc_group_", "");
       selectedGroup.set(interaction.user.id, groupId);
+      pendingItem.delete(interaction.user.id);
 
       const ui = buildCalculatorUI(interaction.user.id);
 
       return interaction.update(ui);
     }
 
-    // Clear cart
     if (interaction.isButton() && interaction.customId === "calc_clear") {
       carts.delete(interaction.user.id);
       pendingItem.delete(interaction.user.id);
@@ -434,7 +331,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
     }
 
-    // Finish / calculate
     if (interaction.isButton() && interaction.customId === "calc_finish") {
       const cart = carts.get(interaction.user.id) || [];
 
@@ -457,7 +353,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
     }
 
-    // Item select
     if (interaction.isStringSelectMenu() && interaction.customId === "calc_select_item") {
       const itemName = interaction.values[0];
 
@@ -470,33 +365,23 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       pendingItem.set(interaction.user.id, itemName);
 
-      return interaction.showModal(buildQtyModal(itemName));
+      const ui = buildCalculatorUI(interaction.user.id, `Ai selectat ${itemName}.`);
+
+      return interaction.update(ui);
     }
 
-    // Quantity modal
-    if (interaction.isModalSubmit() && interaction.customId === "calc_qty_modal") {
+    if (interaction.isStringSelectMenu() && interaction.customId === "calc_select_qty") {
       const itemName = pendingItem.get(interaction.user.id);
 
       if (!itemName || !RECIPES[itemName]) {
-        return interaction.reply({
-          content: "❌ Nu am găsit itemul selectat. Încearcă din nou.",
-          flags: MessageFlags.Ephemeral,
-        });
+        const ui = buildCalculatorUI(interaction.user.id, "Mai întâi selectează un item.");
+        return interaction.update(ui);
       }
 
-      const rawQty = interaction.fields.getTextInputValue("qty").trim();
-      const qty = Number(rawQty);
-
-      if (!Number.isInteger(qty) || qty <= 0) {
-        return interaction.reply({
-          content: "❌ Cantitatea trebuie să fie un număr întreg mai mare decât 0.",
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-
+      const qty = Number(interaction.values[0]);
       const cart = carts.get(interaction.user.id) || [];
-      const existing = cart.find((x) => x.itemName === itemName);
 
+      const existing = cart.find((x) => x.itemName === itemName);
       if (existing) {
         existing.qty += qty;
       } else {
@@ -511,10 +396,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         `Adăugat în coș: ${itemName} x${qty}`
       );
 
-      return interaction.reply({
-        ...ui,
-        flags: MessageFlags.Ephemeral,
-      });
+      return interaction.update(ui);
     }
   } catch (err) {
     console.error("❌ Interaction error:", err);
