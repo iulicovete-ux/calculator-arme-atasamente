@@ -136,7 +136,7 @@ function buildGroupButtons(userId) {
 }
 
 function buildItemSelect(userId) {
-  const currentGroup = selectedGroup.get(userId) || "1";
+  const currentGroup = selectedGroup.get(userId) || "Pistoale";
   const items = GROUPS[currentGroup] || [];
 
   return new ActionRowBuilder().addComponents(
@@ -186,7 +186,7 @@ function buildActionButtons(userId) {
 }
 
 function buildCalculatorUI(userId, notice = "") {
-  const currentGroup = selectedGroup.get(userId) || "1";
+  const currentGroup = selectedGroup.get(userId) || "Pistoale";
   const selected = pendingItem.get(userId);
 
   let helperText = "";
@@ -292,7 +292,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isButton() && interaction.customId === "calc_open") {
       if (!selectedGroup.has(interaction.user.id)) {
-        selectedGroup.set(interaction.user.id, "1");
+        selectedGroup.set(interaction.user.id, "Pistoale");
       }
 
       pendingItem.delete(interaction.user.id);
