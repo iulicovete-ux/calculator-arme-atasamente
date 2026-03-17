@@ -104,7 +104,7 @@ function calculateTotals(cart) {
 function buildOpenPanel() {
   return {
     content:
-      "**Calculator Crafting**\nApasă pe buton pentru a deschide calculatorul.\nSelecția și calculele tale vor fi private.",
+      "Apasă pe buton pentru a deschide calculatorul.\nSelecția și calculele tale vor fi private.",
     components: [
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -231,7 +231,7 @@ function buildResultMessage(userId) {
 
   return {
     content:
-      `**Rezultat calcul privat**\n\n` +
+      `\n\n` +
       `**Coșul tău:**\n${formatCart(userId)}\n\n` +
       `**Materiale totale necesare:**\n${totalsText}`,
     components: [
