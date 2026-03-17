@@ -14,7 +14,7 @@ const {
   MessageFlags,
 } = require("discord.js");
 
-console.log("✅ BOT VERSION: Crafting Calculator v3-fixed");
+console.log("✅ BOT VERSION: Crafting Calculator v4");
 
 // =========================
 // ENV
@@ -34,6 +34,8 @@ const GUILD_ID = mustEnv("GUILD_ID");
 
 // =========================
 // STATIC RECIPES
+// Neutral placeholder names.
+// You can rename them manually in GitHub.
 // =========================
 const RECIPES = {
   "Pistol": { "Otel": 8, "Suruburi": 80, "Arc Metalic": 1, "Polimer": 20 },
@@ -51,12 +53,62 @@ const RECIPES = {
   "Compact Rifle": { "Otel": 19, "Suruburi": 115, "Arc Metalic": 2, "Polimer": 44, "Bucata de Lemn": 1, "Teava Metalica": 1 },
   "Carabine Rifle": { "Otel": 18, "Suruburi": 140, "Arc Metalic": 2, "Polimer": 72, "Teava Metalica": 1 },
   "Advanced Rifle": { "Otel": 18, "Suruburi": 145, "Arc Metalic": 2, "Polimer": 78, "Teava Metalica": 1 },
+
+  "Amortizor Pistol": { "Otel": 2, "Suruburi": 5, "Polimer": 2 },
+  "Amortizor Combat Pistol": { "Otel": 2, "Suruburi": 5, "Polimer": 2 },
+  "Amortizor Pistol MK2": { "Otel": 2, "Suruburi": 5, "Polimer": 2 },
+  "Amortizor CERAMIC PISTOL": { "Otel": 2, "Suruburi": 5, "Polimer": 2 },
+  "Amortizor Pistol XM3": { "Otel": 2, "Suruburi": 5, "Polimer": 2 },
+  "Amortizor MICRO SMG": { "Otel": 3, "Suruburi": 5, "Polimer": 3 },
+  "Amortizor TEC-9": { "Otel": 2, "Suruburi": 5, "Polimer": 2 },
+  "Amortizor Muzzle Brake Tec Pistol": { "Otel": 3, "Suruburi": 5, "Polimer": 3 },
+  "Amortizor SMG": { "Otel": 3, "Suruburi": 5, "Polimer": 3 },
+  "Amortizor Assault Rifle": { "Otel": 3, "Suruburi": 5, "Polimer": 3 },
+  "Amortizor Carbine Rifle": { "Otel": 3, "Suruburi": 5, "Polimer": 3 },
+  "Amortizor Advanced Rifle": { "Otel": 3, "Suruburi": 5, "Polimer": 3 },
+
+  "Incarcator Pistol": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Arc Metalic": 1 },
+  "Incarcator Combat Pistol": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Arc Metalic": 1 },
+  "Incarcator Pistol MK2": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Arc Metalic": 1 },
+  "Incarcator CERAMIC PISTOL": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Arc Metalic": 1 },
+  "Incarcator MICRO SMG": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Arc Metalic": 1 },
+  "Incarcator TEC-9": { "Otel": 2, "Suruburi": 8, "Polimer": 2, "Arc Metalic": 1 },
+  "Incarcator Tec Pistol": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Arc Metalic": 1 },
+  "Incarcator SMG": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Arc Metalic": 1 },
+  "Baterie de Gloante SMG": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Arc Metalic": 1 },
+  "Incarcator Assault Rifle": { "Otel": 3, "Suruburi": 20, "Polimer": 3, "Arc Metalic": 1 },
+  "Baterie de Gloante Assault Rifle": { "Otel": 2, "Suruburi": 5, "Polimer": 2, "Arc Metalic": 1 },
+  "Incarcator Compact Rifle": { "Otel": 3, "Suruburi": 30, "Polimer": 3, "Arc Metalic": 1 },
+  "Baterie de Gloante Compact Rifle": { "Otel": 3, "Suruburi": 20, "Polimer": 3, "Arc Metalic": 1 },
+  "Baterie de Gloante Carabine Rifle": { "Otel": 3, "Suruburi": 20, "Polimer": 3, "Arc Metalic": 1 },
+  "Incarcator Advanced Rifle": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Arc Metalic": 1 },
+
+  "Lanterna Pistol": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Bec": 1, "Lupa": 1 },
+  "Lanterna Combat pistol": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Bec": 1, "Lupa": 1 },
+  "Lanterna Pistol MK2": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Bec": 1, "Lupa": 1 },
+  "Lanterna MICRO SMG": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Bec": 1, "Lupa": 1 },
+  "Lanterna SMG": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Bec": 1, "Lupa": 1 },
+  "Lanterna Assault Rifle": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Bec": 1, "Lupa": 1 },
+  "Lanterna Advanced Rifle": { "Otel": 1, "Suruburi": 5, "Polimer": 1, "Bec": 1, "Lupa": 1 },
+
+  "Mounted Scope Pistol MK2": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Lupa": 1 },
+  "Luneta MICRO SMG": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Lupa": 1 },
+  "Luneta Tec Pistol": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Lupa": 1 },
+  "Luneta SMG": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Lupa": 1 },
+  "Luneta Assault Rifle": { "Otel": 2, "Suruburi": 10, "Polimer": 2, "Lupa": 1 },
+
+  "Grip Assault Rifle": { "Otel": 1, "Suruburi": 5, "Polimer": 1 },
 };
 
 const GROUPS = {
-  "Pistoale": ["Pistol", "Combat Pistol", "Pistol MK2", "Ceramic Pistol", "Pistol XM3"],
-  "SMG-uri": ["Micro SMG", "TEC-9", "Mini SMG", "TEC-Pistol", "SMG"],
-  "Arme mari": ["Combat PDW", "Assault Rifle", "Compact Rifle", "Carabine Rifle", "Advanced Rifle"],
+  "Pistoale": ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"],
+  "SMG-uri": ["Item 6", "Item 7", "Item 8", "Item 9", "Item 10"],
+  "Arme mari": ["Item 11", "Item 12", "Item 13", "Item 14", "Item 15"],
+  "Amortizoare": ["Addon 1", "Addon 2", "Addon 3", "Addon 4", "Addon 5", "Addon 6", "Addon 7", "Addon 8", "Addon 9", "Addon 10"],
+  "Incarcatoare": ["Addon 11", "Addon 12", "Addon 13", "Addon 14", "Addon 15", "Addon 16", "Addon 17", "Addon 18", "Addon 19", "Addon 20"],
+  "Lanterne": ["Addon 21", "Addon 22", "Addon 23", "Addon 24", "Addon 25", "Addon 26", "Addon 27", "Addon 28", "Addon 29", "Addon 30"],
+  "Scope": ["Addon 31", "Addon 32", "Addon 33", "Addon 34", "Addon 35", "Addon 36", "Addon 37", "Addon 38", "Addon 39"],
+  "Grip": ["Addon 40"],
 };
 
 // =========================
@@ -69,9 +121,9 @@ const client = new Client({
 // =========================
 // IN-MEMORY USER STATE
 // =========================
-const carts = new Map();        // userId -> [{ itemName, qty }]
-const pendingItem = new Map();  // userId -> selected item name
-const selectedGroup = new Map();// userId -> "Pistoale" | "SMG-uri" | "Arme mari"
+const carts = new Map();         // userId -> [{ itemName, qty }]
+const pendingItem = new Map();   // userId -> selected item name
+const selectedGroup = new Map(); // userId -> group name
 
 // =========================
 // HELPERS
@@ -104,7 +156,7 @@ function calculateTotals(cart) {
 function buildOpenPanel() {
   return {
     content:
-      "**Ai nevoie de arme?.**\n**Deschide calculatorul si selecteaza ce arme vrei.**",
+      "**Calculator Crafting**\nApasă pe buton pentru a deschide calculatorul.\nSelecția și calculele tale vor fi private.",
     components: [
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -131,7 +183,34 @@ function buildGroupButtons(userId) {
     new ButtonBuilder()
       .setCustomId("calc_group_arme_mari")
       .setLabel("Arme mari")
-      .setStyle(currentGroup === "Arme mari" ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setStyle(currentGroup === "Arme mari" ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId("calc_group_addons_1")
+      .setLabel("Amortizoare")
+      .setStyle(currentGroup === "Amortizoare" ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId("calc_group_addons_2")
+      .setLabel("Incarcatoare")
+      .setStyle(currentGroup === "Incarcatoare" ? ButtonStyle.Primary : ButtonStyle.Secondary)
+  );
+}
+
+function buildGroupButtons2(userId) {
+  const currentGroup = selectedGroup.get(userId) || "Pistoale";
+
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("calc_group_addons_3")
+      .setLabel("Lanterne")
+      .setStyle(currentGroup === "Lanterne" ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId("calc_group_addons_4")
+      .setLabel("Scope")
+      .setStyle(currentGroup === "Scope" ? ButtonStyle.Primary : ButtonStyle.Secondary)
+    new ButtonBuilder()
+      .setCustomId("calc_group_addons_4")
+      .setLabel("Grip")
+      .setStyle(currentGroup === "Grip" ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 }
 
@@ -142,7 +221,7 @@ function buildItemSelect(userId) {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId("calc_select_item")
-      .setPlaceholder("Alege o armă...")
+      .setPlaceholder("Alege un item...")
       .addOptions(
         items.map((itemName) => ({
           label: itemName.slice(0, 100),
@@ -157,7 +236,7 @@ function buildQtySelect() {
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId("calc_select_qty")
-      .setPlaceholder("Câte arme vrei?")
+      .setPlaceholder("Alege cantitatea...")
       .addOptions(
         Array.from({ length: 20 }, (_, i) => ({
           label: `${i + 1}`,
@@ -196,17 +275,19 @@ function buildCalculatorUI(userId, notice = "") {
 
   const content =
     `${notice ? `**${notice}**\n\n` : ""}` +
+    `**Calculator privat**\n` +
     `**Grupa curentă:** ${currentGroup}\n\n` +
     `**Coșul tău:**\n${formatCart(userId)}\n\n` +
     helperText +
-    `1. Alege tipul de armă\n` +
-    `2. Alege arma\n` +
+    `1. Alege grupa\n` +
+    `2. Alege itemul\n` +
     `3. Alege cantitatea\n` +
-    `4. Repetă pentru alte arme\n` +
+    `4. Repetă pentru alte iteme\n` +
     `5. **Calculează**`;
 
   const components = [
     buildGroupButtons(userId),
+    buildGroupButtons2(userId),
     buildItemSelect(userId),
   ];
 
@@ -230,7 +311,7 @@ function buildResultMessage(userId) {
 
   return {
     content:
-      `\n\n` +
+      `**Rezultat calcul privat**\n\n` +
       `**Coșul tău:**\n${formatCart(userId)}\n\n` +
       `**Materiale totale necesare:**\n${totalsText}`,
     components: [
@@ -307,25 +388,48 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isButton() && interaction.customId === "calc_group_pistoale") {
       selectedGroup.set(interaction.user.id, "Pistoale");
       pendingItem.delete(interaction.user.id);
-
-      const ui = buildCalculatorUI(interaction.user.id);
-      return interaction.update(ui);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
     }
 
     if (interaction.isButton() && interaction.customId === "calc_group_smg") {
       selectedGroup.set(interaction.user.id, "SMG-uri");
       pendingItem.delete(interaction.user.id);
-
-      const ui = buildCalculatorUI(interaction.user.id);
-      return interaction.update(ui);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
     }
 
     if (interaction.isButton() && interaction.customId === "calc_group_arme_mari") {
       selectedGroup.set(interaction.user.id, "Arme mari");
       pendingItem.delete(interaction.user.id);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
+    }
 
-      const ui = buildCalculatorUI(interaction.user.id);
-      return interaction.update(ui);
+    if (interaction.isButton() && interaction.customId === "calc_group_Amortizoare") {
+      selectedGroup.set(interaction.user.id, "Amortizoare");
+      pendingItem.delete(interaction.user.id);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
+    }
+
+    if (interaction.isButton() && interaction.customId === "calc_group_Incarcatoare") {
+      selectedGroup.set(interaction.user.id, "Incarcatoare");
+      pendingItem.delete(interaction.user.id);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
+    }
+
+    if (interaction.isButton() && interaction.customId === "calc_group_Lanterne") {
+      selectedGroup.set(interaction.user.id, "Lanterne");
+      pendingItem.delete(interaction.user.id);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
+    }
+
+    if (interaction.isButton() && interaction.customId === "calc_group_Scope") {
+      selectedGroup.set(interaction.user.id, "Scope");
+      pendingItem.delete(interaction.user.id);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
+    }
+    if (interaction.isButton() && interaction.customId === "calc_group_Grip") {
+      selectedGroup.set(interaction.user.id, "Grip");
+      pendingItem.delete(interaction.user.id);
+      return interaction.update(buildCalculatorUI(interaction.user.id));
     }
 
     if (interaction.isButton() && interaction.customId === "calc_clear") {
@@ -378,17 +482,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       pendingItem.set(interaction.user.id, itemName);
 
-      const ui = buildCalculatorUI(interaction.user.id, `Ai selectat ${itemName}.`);
-
-      return interaction.update(ui);
+      return interaction.update(
+        buildCalculatorUI(interaction.user.id, `Ai selectat ${itemName}.`)
+      );
     }
 
     if (interaction.isStringSelectMenu() && interaction.customId === "calc_select_qty") {
       const itemName = pendingItem.get(interaction.user.id);
 
       if (!itemName || !RECIPES[itemName]) {
-        const ui = buildCalculatorUI(interaction.user.id, "Mai întâi selectează un item.");
-        return interaction.update(ui);
+        return interaction.update(
+          buildCalculatorUI(interaction.user.id, "Mai întâi selectează un item.")
+        );
       }
 
       const qty = Number(interaction.values[0]);
@@ -404,12 +509,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
       carts.set(interaction.user.id, cart);
       pendingItem.delete(interaction.user.id);
 
-      const ui = buildCalculatorUI(
-        interaction.user.id,
-        `Adăugat în coș: ${itemName} x${qty}`
+      return interaction.update(
+        buildCalculatorUI(interaction.user.id, `Adăugat în coș: ${itemName} x${qty}`)
       );
-
-      return interaction.update(ui);
     }
   } catch (err) {
     console.error("❌ Interaction error:", err);
