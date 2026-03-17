@@ -14,11 +14,8 @@ const {
   MessageFlags,
 } = require("discord.js");
 
-console.log("✅ BOT VERSION: Crafting Calculator v4");
+console.log("✅ BOT VERSION: Crafting Calculator v4-fixed");
 
-// =========================
-// ENV
-// =========================
 function mustEnv(name) {
   const v = process.env[name];
   if (!v) {
@@ -32,22 +29,19 @@ const TOKEN = mustEnv("TOKEN");
 const CLIENT_ID = mustEnv("CLIENT_ID");
 const GUILD_ID = mustEnv("GUILD_ID");
 
-// =========================
-// STATIC RECIPES
-// Neutral placeholder names.
-// You can rename them manually in GitHub.
-// =========================
 const RECIPES = {
   "Pistol": { "Otel": 8, "Suruburi": 80, "Arc Metalic": 1, "Polimer": 20 },
   "Combat Pistol": { "Otel": 8, "Suruburi": 85, "Polimer": 18 },
   "Pistol MK2": { "Otel": 9, "Suruburi": 91, "Arc Metalic": 1, "Polimer": 22 },
   "Ceramic Pistol": { "Otel": 9, "Suruburi": 91, "Arc Metalic": 1, "Polimer": 18 },
   "Pistol XM3": { "Otel": 10, "Suruburi": 95, "Arc Metalic": 1, "Polimer": 20 },
+
   "Micro SMG": { "Otel": 15, "Suruburi": 95, "Arc Metalic": 1, "Polimer": 42, "Teava Metalica": 1 },
   "TEC-9": { "Otel": 12, "Suruburi": 100, "Arc Metalic": 1, "Polimer": 38 },
   "Mini SMG": { "Otel": 11, "Suruburi": 97, "Arc Metalic": 1, "Polimer": 36, "Bucata de Lemn": 1 },
   "TEC-Pistol": { "Otel": 14, "Suruburi": 115, "Arc Metalic": 1, "Polimer": 44, "Teava Metalica": 1 },
   "SMG": { "Otel": 13, "Suruburi": 105, "Arc Metalic": 1, "Polimer": 48, "Teava Metalica": 1 },
+
   "Combat PDW": { "Otel": 14, "Suruburi": 110, "Arc Metalic": 1, "Polimer": 50, "Teava Metalica": 1 },
   "Assault Rifle": { "Otel": 21, "Suruburi": 135, "Arc Metalic": 2, "Polimer": 68, "Bucata de Lemn": 1, "Teava Metalica": 1 },
   "Compact Rifle": { "Otel": 19, "Suruburi": 115, "Arc Metalic": 2, "Polimer": 44, "Bucata de Lemn": 1, "Teava Metalica": 1 },
@@ -101,33 +95,67 @@ const RECIPES = {
 };
 
 const GROUPS = {
-  "Pistoale": ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"],
-  "SMG-uri": ["Item 6", "Item 7", "Item 8", "Item 9", "Item 10"],
-  "Arme mari": ["Item 11", "Item 12", "Item 13", "Item 14", "Item 15"],
-  "Amortizoare": ["Addon 1", "Addon 2", "Addon 3", "Addon 4", "Addon 5", "Addon 6", "Addon 7", "Addon 8", "Addon 9", "Addon 10"],
-  "Incarcatoare": ["Addon 11", "Addon 12", "Addon 13", "Addon 14", "Addon 15", "Addon 16", "Addon 17", "Addon 18", "Addon 19", "Addon 20"],
-  "Lanterne": ["Addon 21", "Addon 22", "Addon 23", "Addon 24", "Addon 25", "Addon 26", "Addon 27", "Addon 28", "Addon 29", "Addon 30"],
-  "Scope": ["Addon 31", "Addon 32", "Addon 33", "Addon 34", "Addon 35", "Addon 36", "Addon 37", "Addon 38", "Addon 39"],
-  "Grip": ["Addon 40"],
+  "Pistoale": ["Pistol", "Combat Pistol", "Pistol MK2", "Ceramic Pistol", "Pistol XM3"],
+  "SMG-uri": ["Micro SMG", "TEC-9", "Mini SMG", "TEC-Pistol", "SMG"],
+  "Arme mari": ["Combat PDW", "Assault Rifle", "Compact Rifle", "Carabine Rifle", "Advanced Rifle"],
+  "Amortizoare": [
+    "Amortizor Pistol",
+    "Amortizor Combat Pistol",
+    "Amortizor Pistol MK2",
+    "Amortizor CERAMIC PISTOL",
+    "Amortizor Pistol XM3",
+    "Amortizor MICRO SMG",
+    "Amortizor TEC-9",
+    "Amortizor Muzzle Brake Tec Pistol",
+    "Amortizor SMG",
+    "Amortizor Assault Rifle",
+    "Amortizor Carbine Rifle",
+    "Amortizor Advanced Rifle"
+  ],
+  "Incarcatoare": [
+    "Incarcator Pistol",
+    "Incarcator Combat Pistol",
+    "Incarcator Pistol MK2",
+    "Incarcator CERAMIC PISTOL",
+    "Incarcator MICRO SMG",
+    "Incarcator TEC-9",
+    "Incarcator Tec Pistol",
+    "Incarcator SMG",
+    "Baterie de Gloante SMG",
+    "Incarcator Assault Rifle",
+    "Baterie de Gloante Assault Rifle",
+    "Incarcator Compact Rifle",
+    "Baterie de Gloante Compact Rifle",
+    "Baterie de Gloante Carabine Rifle",
+    "Incarcator Advanced Rifle"
+  ],
+  "Lanterne": [
+    "Lanterna Pistol",
+    "Lanterna Combat pistol",
+    "Lanterna Pistol MK2",
+    "Lanterna MICRO SMG",
+    "Lanterna SMG",
+    "Lanterna Assault Rifle",
+    "Lanterna Advanced Rifle"
+  ],
+  "Scope": [
+    "Mounted Scope Pistol MK2",
+    "Luneta MICRO SMG",
+    "Luneta Tec Pistol",
+    "Luneta SMG",
+    "Luneta Assault Rifle"
+  ],
+  "Grip": ["Grip Assault Rifle"],
 };
 
-// =========================
-// DISCORD CLIENT
-// =========================
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
 });
 
-// =========================
-// IN-MEMORY USER STATE
-// =========================
-const carts = new Map();         // userId -> [{ itemName, qty }]
-const pendingItem = new Map();   // userId -> selected item name
-const selectedGroup = new Map(); // userId -> group name
+const carts = new Map();
+const pendingItem = new Map();
+const selectedGroup = new Map();
 
-// =========================
-// HELPERS
-// =========================
 function formatCart(userId) {
   const cart = carts.get(userId) || [];
   if (cart.length === 0) return "Coșul este gol.";
@@ -185,11 +213,11 @@ function buildGroupButtons(userId) {
       .setLabel("Arme mari")
       .setStyle(currentGroup === "Arme mari" ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId("calc_group_addons_1")
+      .setCustomId("calc_group_amortizoare")
       .setLabel("Amortizoare")
       .setStyle(currentGroup === "Amortizoare" ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId("calc_group_addons_2")
+      .setCustomId("calc_group_incarcatoare")
       .setLabel("Incarcatoare")
       .setStyle(currentGroup === "Incarcatoare" ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
@@ -200,15 +228,15 @@ function buildGroupButtons2(userId) {
 
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId("calc_group_addons_3")
+      .setCustomId("calc_group_lanterne")
       .setLabel("Lanterne")
       .setStyle(currentGroup === "Lanterne" ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId("calc_group_addons_4")
+      .setCustomId("calc_group_scope")
       .setLabel("Scope")
-      .setStyle(currentGroup === "Scope" ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setStyle(currentGroup === "Scope" ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId("calc_group_addons_4")
+      .setCustomId("calc_group_grip")
       .setLabel("Grip")
       .setStyle(currentGroup === "Grip" ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
@@ -348,17 +376,11 @@ async function registerCommands() {
   console.log("✅ Slash commands registered.");
 }
 
-// =========================
-// READY
-// =========================
 client.once(Events.ClientReady, async () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
   await registerCommands();
 });
 
-// =========================
-// INTERACTIONS
-// =========================
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isChatInputCommand() && interaction.commandName === "setup-calculator") {
@@ -377,10 +399,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       pendingItem.delete(interaction.user.id);
 
-      const ui = buildCalculatorUI(interaction.user.id);
-
       return interaction.reply({
-        ...ui,
+        ...buildCalculatorUI(interaction.user.id),
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -403,30 +423,31 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return interaction.update(buildCalculatorUI(interaction.user.id));
     }
 
-    if (interaction.isButton() && interaction.customId === "calc_group_Amortizoare") {
+    if (interaction.isButton() && interaction.customId === "calc_group_amortizoare") {
       selectedGroup.set(interaction.user.id, "Amortizoare");
       pendingItem.delete(interaction.user.id);
       return interaction.update(buildCalculatorUI(interaction.user.id));
     }
 
-    if (interaction.isButton() && interaction.customId === "calc_group_Incarcatoare") {
+    if (interaction.isButton() && interaction.customId === "calc_group_incarcatoare") {
       selectedGroup.set(interaction.user.id, "Incarcatoare");
       pendingItem.delete(interaction.user.id);
       return interaction.update(buildCalculatorUI(interaction.user.id));
     }
 
-    if (interaction.isButton() && interaction.customId === "calc_group_Lanterne") {
+    if (interaction.isButton() && interaction.customId === "calc_group_lanterne") {
       selectedGroup.set(interaction.user.id, "Lanterne");
       pendingItem.delete(interaction.user.id);
       return interaction.update(buildCalculatorUI(interaction.user.id));
     }
 
-    if (interaction.isButton() && interaction.customId === "calc_group_Scope") {
+    if (interaction.isButton() && interaction.customId === "calc_group_scope") {
       selectedGroup.set(interaction.user.id, "Scope");
       pendingItem.delete(interaction.user.id);
       return interaction.update(buildCalculatorUI(interaction.user.id));
     }
-    if (interaction.isButton() && interaction.customId === "calc_group_Grip") {
+
+    if (interaction.isButton() && interaction.customId === "calc_group_grip") {
       selectedGroup.set(interaction.user.id, "Grip");
       pendingItem.delete(interaction.user.id);
       return interaction.update(buildCalculatorUI(interaction.user.id));
