@@ -345,20 +345,25 @@ function buildCalculatorUI(userId, notice = "") {
   if (selected) {
     helperText =
       currentGroup === "Gloante"
-        ? `**Item selectat:** ${selected}\nIntrodu cantitatea exactă în fereastra care se deschide.\n\n`
-        : `**Item selectat:** ${selected}\nAlege cantitatea pentru acest item.\n\n`;
+        ? `🔸 **Item selectat:** **${selected}**\nIntrodu cantitatea exactă în fereastra care se deschide.\n\n`
+        : `🔸 **Item selectat:** **${selected}**\nAlege cantitatea pentru acest item.\n\n`;
   }
 
+  const noticeBlock = notice
+    ? `🚨 **ACȚIUNE CONFIRMATĂ** 🚨\n**${notice}**\n━━━━━━━━━━━━━━━━━━━━━━\n\n`
+    : "";
+
   const content =
-    `${notice ? `**${notice}**\n\n` : ""}` +
-    `**Grupa curentă:** ${currentGroup}\n\n` +
-    `**Coșul tău:**\n${formatCart(userId)}\n\n` +
+    `${noticeBlock}` +
+    `📦 **Grupa curentă:** **${currentGroup}**\n\n` +
+    `🛒 **Coșul tău:**\n${formatCart(userId)}\n\n` +
     helperText +
-    `1. Alege grupa\n` +
-    `2. Alege arma/atasamentul/gloantele\n` +
-    `3. Alege cantitatea\n` +
-    `4. Repetă pentru alte arme/atasamente/gloante\n` +
-    `5. **Calculează**`;
+    `📋 **Instrucțiuni**\n` +
+    `1️⃣ Alege grupa\n` +
+    `2️⃣ Alege arma / atașamentul / gloanțele\n` +
+    `3️⃣ Alege cantitatea\n` +
+    `4️⃣ Repetă pentru alte obiecte\n` +
+    `5️⃣ Apasă **Calculează**`;
 
   const components = [
     buildGroupButtons(userId),
