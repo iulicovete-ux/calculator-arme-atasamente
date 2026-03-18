@@ -445,7 +445,7 @@ client.once(Events.ClientReady, async () => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
-    if (interaction.isModalSubmit() && interaction.customId === "calc_consumable_qty_modal") {
+        if (interaction.isModalSubmit() && interaction.customId === "calc_consumable_qty_modal") {
       const itemName = pendingItem.get(interaction.user.id);
 
       if (!itemName || !RECIPES[itemName]) {
@@ -477,10 +477,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
       carts.set(interaction.user.id, cart);
       pendingItem.delete(interaction.user.id);
 
-      return interaction.reply({
-        ...buildCalculatorUI(interaction.user.id, `Adăugat în coș: ${itemName} x${qty}`),
-        flags: MessageFlags.Ephemeral,
-      });
+      return interaction.update(
+        buildCalculatorUI(interaction.user.id, `Adăugat în coș: ${itemName} x${qty}`)
+      );
     }
 
     if (interaction.isChatInputCommand() && interaction.commandName === "setup-calculator") {
