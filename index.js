@@ -391,8 +391,11 @@ function buildResultMessage(userId) {
 
   return {
     content:
-      `**Coșul tău:**\n${formatCart(userId)}\n\n` +
-      `**Materiale totale necesare:**\n${totalsText}`,
+      `🧾 **REZULTAT CALCUL**\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `🛒 **Coșul tău:**\n${formatCart(userId)}\n\n` +
+      `🧱 **Materiale totale necesare:**\n${totalsText}\n\n` +
+      `📌 Poți reveni la calculator sau poți goli coșul.`,
     components: [
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
